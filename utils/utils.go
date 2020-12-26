@@ -2,9 +2,18 @@ package utils
 
 import (
 	"bufio"
+	"io/ioutil"
 	"log"
 	"os"
 )
+
+func SlurpFile(filename string) string {
+	file, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return string(file)
+}
 
 func ReadFile(filename string) []string {
 

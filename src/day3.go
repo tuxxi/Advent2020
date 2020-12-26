@@ -30,7 +30,7 @@ func traverse(t Traversal, lines []string) int {
 type Traversal struct {
 	x_step, y_step int
 }
-//gopls: ignore
+
 func main() {
 	lines := utils.ReadFile("input/day3")
 	// part 1
