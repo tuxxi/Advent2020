@@ -42,14 +42,14 @@ func parseBagRules(line string, outTree *map[string][]Bag) {
 	}
 }
 
-func traverseTree(tree map[string][]Bag, seen *mapset.Set, key, target string, count *int) bool {
+func traverseTree(tree map[string][]Bag, seen *mapset.Set, key string, count *int) bool {
 	// go through each sub-branch on this node
 	retval := false
 	for _, branch := range tree[key] {
-		parentSeen := traverseTree(tree, seen, branch.name, target, count)
-		if branch.name == target || parentSeen {
+		// traverse to the sub-branch
+		parentSeen := traverseTree(tree, seen, branch.name, count)
+		if branch.name == "shiny gold" || parentSeen {
 			if !(*seen).Contains(key) {
-				fmt.Printf("'%s' bag contains %s. seen: %v\n", key, target, *seen)
 				(*seen).Add(key)
 				*count++
 			}
@@ -59,17 +59,27 @@ func traverseTree(tree map[string][]Bag, seen *mapset.Set, key, target string, c
 	return retval
 }
 
+func traverseRoot(tree map[string][]Bag, root string) int {
+	if len(tree[root]) == 0 {
+		// leaf, so there's just one bag - this one
+		return 1
+	}
+	var localCount int
+	// recurse through the subtree
+	for _, child := range tree[root] {
+		// make sure to count the outer bag
+		if len(tree[child.name]) > 0 {
+			localCount += child.count
+		}
+		// as well as any bags contained within it
+		ret := traverseRoot(tree, child.name)
+		localCount += ret * child.count
+	}
+	return localCount
+}
+
 func main() {
 	lines := utils.ReadFile("input/day7")
-	// lines = strings.Split(`light red bags contain 1 bright white bag, 2 muted yellow bags.
-// dark orange bags contain 3 bright white bags, 4 muted yellow bags.
-// bright white bags contain 1 shiny gold bag.
-// muted yellow bags contain 2 shiny gold bags, 9 faded blue bags.
-// shiny gold bags contain 1 dark olive bag, 2 vibrant plum bags.
-// dark olive bags contain 3 faded blue bags, 4 dotted black bags.
-// vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.
-// faded blue bags contain no other bags.
-// dotted black bags contain no other bags.`, "\n")
 
 	// build up a tree, with map from bag color => contents
 	tree := make(map[string][]Bag)
@@ -84,14 +94,17 @@ func main() {
 		i++
 	}
 	sort.Strings(keys)
-	fmt.Printf("%v\n", tree)
+	// fmt.Printf("%v\n", tree)
 	// part 1: traverse the tree
 	var total int
 	seen := mapset.NewSet()
 	for _, k := range keys {
 		// check decendents of every branch of the tree to find shiny gold
-		traverseTree(tree, &seen, k, "shiny gold", &total)
+		traverseTree(tree, &seen, k, &total)
 	}
+	fmt.Printf("Part 1: %d\n", total)
 
-	fmt.Printf("%d\n", total)
+	// part 2
+	total2 := traverseRoot(tree, "shiny gold")
+	fmt.Printf("Part 2: %d\n", total2)
 }
