@@ -3,14 +3,14 @@ package utils
 import (
 	"bufio"
 	"io/ioutil"
-	"log"
 	"os"
+	"strconv"
 )
 
 func SlurpFile(filename string) string {
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	return string(file)
 }
@@ -19,7 +19,7 @@ func ReadFile(filename string) []string {
 
 	file, err := os.Open(filename)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	defer file.Close()
 
@@ -31,8 +31,32 @@ func ReadFile(filename string) []string {
 	}
 
 	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	return retval
+}
+
+func ParseInt(input string) int {
+	val, err := strconv.ParseInt(input, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	return int(val)
+}
+
+func StringSliceToIntSlice(strings []string) []int {
+	out := make([]int, len(strings))
+	for i, str := range strings {
+		out[i] = ParseInt(str)
+	}
+	return out
+}
+
+func SumOfSlice(ints []int) int {
+	var out int
+	for _, item := range ints {
+		out += item
+	}
+	return out
 }
